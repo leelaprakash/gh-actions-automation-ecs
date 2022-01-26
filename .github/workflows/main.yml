@@ -21,15 +21,11 @@ jobs:
       if: ${{ github.ref == 'refs/heads/main' && always() }}
       run: |
         echo "This is running on main branch"
-        export AWS_REGION=ap-south-1                          # set this to your preferred AWS region, e.g. us-west-1
-        export ECR_REPOSITORY=leela-test-gh-actions           # set this to your Amazon ECR repository name
-        export ECS_SERVICE=nginx-test                         # set this to your Amazon ECS service name
-        export ECS_CLUSTER=leela-test-cluster                 # set this to your Amazon ECS cluster name
-        export environment=production                         # containerDefinitions section of your task definition   
-        env        
-
-    - name: Setting env variables 
-      run: |
+        AWS_REGION=ap-south-1                          # set this to your preferred AWS region, e.g. us-west-1
+        ECR_REPOSITORY=leela-test-gh-actions           # set this to your Amazon ECR repository name
+        ECS_SERVICE=nginx-test                         # set this to your Amazon ECS service name
+        ECS_CLUSTER=leela-test-cluster                 # set this to your Amazon ECS cluster name
+        environment=production                         # containerDefinitions section of your task definition    
         echo "AWS_REGION=$AWS_REGION" >> $GITHUB_ENV     
         echo "ECR_REPOSITORY=$ECR_REPOSITORY" >> $GITHUB_ENV    
         echo "ECS_SERVICE=$ECS_SERVICE" >> $GITHUB_ENV     
