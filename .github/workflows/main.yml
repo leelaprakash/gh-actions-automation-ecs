@@ -1,0 +1,83 @@
+name: Deploy to Amazon ECS environment based on branch
+
+on:
+  push:
+    branches:
+      - main
+      - release
+      
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    
+
+    steps: 
+    - name: Setting env variables for main branch
+      if: ${{ github.ref == 'refs/heads/main' && always() }}
+      run: echo "This is running on main branch"
+      env:
+      AWS_REGION: ap-south-1                  # set this to your preferred AWS region, e.g. us-west-1
+      ECR_REPOSITORY: leela-test-gh-actions           # set this to your Amazon ECR repository name
+      ECS_SERVICE: nginx-test                 # set this to your Amazon ECS service name
+      ECS_CLUSTER: leela-test-cluster                # set this to your Amazon ECS cluster name
+      ECS_TASK_DEFINITION: task-definition.json # set this to the path to your Amazon ECS task definition    # file, e.g. .aws/task-definition.json
+      CONTAINER_NAME: nginx           # set this to the name of the container in the
+      environment: production                                         # containerDefinitions section of your task definition      
+
+    - name: Setting env variables for release branch
+      if: ${{ github.ref == 'refs/heads/release' && always() }}
+      run: echo "This is running on release branch"
+      env:
+      AWS_REGION: ap-south-2                  # set this to your preferred AWS region, e.g. us-west-1
+      ECR_REPOSITORY: leela-test-gh-actions           # set this to your Amazon ECR repository name
+      ECS_SERVICE: nginx-test                 # set this to your Amazon ECS service name
+      ECS_CLUSTER: leela-test-cluster                # set this to your Amazon ECS cluster name
+      ECS_TASK_DEFINITION: task-definition.json # set this to the path to your Amazon ECS task definition    # file, e.g. .aws/task-definition.json
+      CONTAINER_NAME: nginx           # set this to the name of the container in the
+      environment: production                                         # containerDefinitions section of your task definition          
+    - name: Checkout
+      uses: actions/checkout@v2
+      
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+    - name: Set outputs
+      id: vars
+      run: echo "::set-output name=sha_short::$(git rev-parse --short=11 HEAD)"
+    - name: Build, tag, and push image to Amazon ECR
+      id: build-image
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        IMAGE_TAG: ${{ steps.vars.outputs.sha_short }}
+      run: |
+        # Build a docker container and
+        # push it to ECR so that it can
+        # be deployed to ECS.
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+        docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:latest
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+        echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+
+    - name: Fill in the new image ID in the Amazon ECS task definition
+      id: task-def
+      uses: aws-actions/amazon-ecs-render-task-definition@v1
+      with:
+        task-definition: ${{ env.ECS_TASK_DEFINITION }}
+        container-name: ${{ env.CONTAINER_NAME }}
+        image: ${{ steps.build-image.outputs.image }}
+
+    - name: Deploy Amazon ECS task definition
+      uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+      with:
+        task-definition: ${{ steps.task-def.outputs.task-definition }}
+        service: ${{ env.ECS_SERVICE }}
+        cluster: ${{ env.ECS_CLUSTER }}
+        wait-for-service-stability: false
