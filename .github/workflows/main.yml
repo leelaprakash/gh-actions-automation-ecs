@@ -142,7 +142,7 @@ jobs:
       uses: aws-actions/amazon-ecr-login@v1
     - name: Build, tag, and push image to Amazon ECR
       if: ${{ github.ref == 'refs/heads/release' && always() }}    
-      id: build-image
+      id: build-image-2
       env:
         ECR_REGISTRY: ${{ steps.login-ecr-2.outputs.registry }}
         IMAGE_TAG: ${{ steps.vars.outputs.sha_short }}
@@ -158,12 +158,12 @@ jobs:
 
     - name: Fill in the new image ID in the Amazon ECS task definition
       if: ${{ github.ref == 'refs/heads/release' && always() }}    
-      id: task-def
+      id: task-def-2
       uses: aws-actions/amazon-ecs-render-task-definition@v1
       with:
         task-definition: ${{ env.ECS_TASK_DEFINITION }}
         container-name: ${{ env.CONTAINER_NAME }}
-        image: ${{ steps.build-image.outputs.image }}
+        image: ${{ steps.build-image-2.outputs.image }}
 
     - name: Deploy Amazon ECS task definition
       if: ${{ github.ref == 'refs/heads/release' && always() }}    
