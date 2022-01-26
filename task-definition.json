@@ -2,7 +2,7 @@
     "taskDefinitionArn": "arn:aws:ecs:ap-south-1:182093768440:task-definition/first-run-task-definition:1",
     "containerDefinitions": [
         {
-            "name": "nginx",
+            "name": "httpd",
             "image": "182093768440.dkr.ecr.ap-south-1.amazonaws.com/leela-test-gh-actions:latest",
             "cpu": 256,
             "memoryReservation": 512,
