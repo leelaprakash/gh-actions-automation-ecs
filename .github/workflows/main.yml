@@ -5,7 +5,11 @@ on:
     branches:
       - main
       - release
-      
+     
+env:
+  ECS_TASK_DEFINITION: task-definition.json 
+  CONTAINER_NAME: nginx
+       
 jobs:
   deploy:
     name: Deploy
@@ -15,27 +19,24 @@ jobs:
     steps: 
     - name: Setting env variables for main branch
       if: ${{ github.ref == 'refs/heads/main' && always() }}
-      run: echo "This is running on main branch"
-      env:
-        AWS_REGION: ap-south-1                  # set this to your preferred AWS region, e.g. us-west-1
-        ECR_REPOSITORY: leela-test-gh-actions           # set this to your Amazon ECR repository name
-        ECS_SERVICE: nginx-test                 # set this to your Amazon ECS service name
-        ECS_CLUSTER: leela-test-cluster                # set this to your Amazon ECS cluster name
-        ECS_TASK_DEFINITION: task-definition.json # set this to the path to your Amazon ECS task definition    # file, e.g. .aws/task-definition.json
-        CONTAINER_NAME: nginx           # set this to the name of the container in the
-        environment: production                                         # containerDefinitions section of your task definition      
+      run: |
+        echo "This is running on main branch"
+        export AWS_REGION=ap-south-1                          # set this to your preferred AWS region, e.g. us-west-1
+        export ECR_REPOSITORY=leela-test-gh-actions           # set this to your Amazon ECR repository name
+        export ECS_SERVICE=nginx-test                         # set this to your Amazon ECS service name
+        export ECS_CLUSTER=leela-test-cluster                 # set this to your Amazon ECS cluster name
+        export environment=production                         # containerDefinitions section of your task definition   
+        env        
 
-    - name: Setting env variables for release branch
-      if: ${{ github.ref == 'refs/heads/release' && always() }}
-      run: echo "This is running on release branch"
-      env:
-        AWS_REGION: ap-south-2                  # set this to your preferred AWS region, e.g. us-west-1
-        ECR_REPOSITORY: leela-test-gh-actions           # set this to your Amazon ECR repository name
-        ECS_SERVICE: nginx-test                 # set this to your Amazon ECS service name
-        ECS_CLUSTER: leela-test-cluster                # set this to your Amazon ECS cluster name
-        ECS_TASK_DEFINITION: task-definition.json # set this to the path to your Amazon ECS task definition    # file, e.g. .aws/task-definition.json
-        CONTAINER_NAME: nginx           # set this to the name of the container in the
-        environment: production                                         # containerDefinitions section of your task definition          
+    - name: Setting env variables 
+      run: |
+        echo "AWS_REGION=$AWS_REGION" >> $GITHUB_ENV     
+        echo "ECR_REPOSITORY=$ECR_REPOSITORY" >> $GITHUB_ENV    
+        echo "ECS_SERVICE=$ECS_SERVICE" >> $GITHUB_ENV     
+        echo "ECS_CLUSTER=$ECS_CLUSTER" >> $GITHUB_ENV 
+        echo "AWS_REGION=$AWS_REGION" >> $GITHUB_ENV     
+        echo "AWS_REGION=$AWS_REGION" >> $GITHUB_ENV                                                                   
+           
     - name: Checkout
       uses: actions/checkout@v2
       
