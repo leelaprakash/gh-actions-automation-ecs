@@ -13,11 +13,9 @@ jobs:
   deploy:
     name: Deploy
     runs-on: ubuntu-latest
-    
-
     steps:                                                            
-    - name: Build and Deploy to ECS 
-      uses: leelaprakash/gh-actions-automation-ecs-central@v1
+    - name: ECS Automation
+      uses: leelaprakash/gh-actions-automation-ecs-central@va
       with:
         ecr-repo: "leela-test-gh-actions"
         ecs-service: "nginx-test" 
