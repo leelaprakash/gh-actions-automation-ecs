@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:                                                            
     - name: ECS Automation
-      uses: leelaprakash/gh-actions-automation-ecs-central@vd
+      uses: leelaprakash/gh-actions-automation-ecs-central@ve
       with:
         ecr-repo: "leela-test-gh-actions"
         ecs-service: "nginx-test" 
