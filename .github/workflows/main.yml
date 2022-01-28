@@ -20,3 +20,5 @@ jobs:
         ecr-repo: "leela-test-gh-actions"
         ecs-service: "nginx-test" 
         task-definition: "first-run-task-definition"
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
