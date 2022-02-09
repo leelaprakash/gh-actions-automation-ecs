@@ -4,19 +4,27 @@ on:
   push:
     branches:
       - main
-    
+permissions:
+      id-token: write
+      contents: read    # This is required for actions/checkout@v2    
 jobs:
   deploy:
     name: Deploy
     runs-on: ubuntu-latest
     steps:                                                            
-    - name: Configure AWS Credentials
+    - name: Git clone the repository
+      uses: actions/checkout@v2
+    - name: configure aws credentials
       uses: aws-actions/configure-aws-credentials@v1
       with:
         role-to-assume: arn:aws:iam::182093768440:role/github-role
+        role-session-name: ghactionssesstion
         aws-region: ap-south-1
-    - name: Geting Latest Task Definition from ECS
-      id: ecs-task-def
+    # Upload a file to AWS s3
+    - name:  Copy index.html to s3
+      run: |
+        aws s3 cp ./test.txt s3://leela-pc/gh-actions/        
+    - name: sts get caller identity
       run: |
         aws sts get-caller-identity
   
